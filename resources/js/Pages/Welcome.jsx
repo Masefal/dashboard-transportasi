@@ -10,16 +10,9 @@ const MASTER_DATA_KOTA = [
     { id: 1, nama: 'Samarinda', provinsi: 'Kalimantan Timur', umr: 3220000, waktuTempuh: 42, armadaOnline: 150, kendaraanPribadi: 60, jumlahPenduduk: 880000, rataJarak: 14, kepadatan: 8, tarifMin: 16000, emisi: 2.8, koordinat: [-0.5022, 117.1536] },
     { id: 2, nama: 'Surabaya', provinsi: 'Jawa Timur', umr: 4525000, waktuTempuh: 35, armadaOnline: 420, kendaraanPribadi: 210, jumlahPenduduk: 2800000, rataJarak: 18, kepadatan: 22, tarifMin: 14000, emisi: 3.5, koordinat: [-7.2504, 112.7688] },
     { id: 3, nama: 'Bandung', provinsi: 'Jawa Barat', umr: 4048000, waktuTempuh: 55, armadaOnline: 310, kendaraanPribadi: 180, jumlahPenduduk: 2500000, rataJarak: 12, kepadatan: 28, tarifMin: 15000, emisi: 4.1, koordinat: [-6.9175, 107.6191] },
-    { id: 4, nama: 'Medan', provinsi: 'Sumatera Utara', umr: 3624000, waktuTempuh: null, armadaOnline: null, kendaraanPribadi: 120, jumlahPenduduk: null, rataJarak: 15, kepadatan: null, tarifMin: 12000, emisi: null, koordinat: [3.5952, 98.6722] }
-];
-
-const dataUMR = [
-    { kota: 'Jakarta', umr: 4900000 },
-    { kota: 'Surabaya', umr: 4525000 },
-    { kota: 'Bandung', umr: 4048000 },
-    { kota: 'Medan', umr: 3624000 },
-    { kota: 'Makassar', umr: 3385000 },
-    { kota: 'Samarinda', umr: 3220000 },
+    { id: 4, nama: 'Medan', provinsi: 'Sumatera Utara', umr: 3624000, waktuTempuh: null, armadaOnline: null, kendaraanPribadi: 120, jumlahPenduduk: null, rataJarak: 15, kepadatan: null, tarifMin: 12000, emisi: null, koordinat: [3.5952, 98.6722] },
+    { id: 5, nama: 'Jakarta', provinsi: 'DKI Jakarta', umr: 4900000, waktuTempuh: 65, armadaOnline: 550, kendaraanPribadi: 320, jumlahPenduduk: 10560000, rataJarak: 22, kepadatan: 35, tarifMin: 15000, emisi: 4.8, koordinat: [-6.2088, 106.8456] },
+    { id: 6, nama: 'Makassar', provinsi: 'Sulawesi Selatan', umr: 3385000, waktuTempuh: 40, armadaOnline: 180, kendaraanPribadi: 85, jumlahPenduduk: 1420000, rataJarak: 16, kepadatan: 12, tarifMin: 14000, emisi: 3.1, koordinat: [-5.1476, 119.4327] }
 ];
 
 const COLORS = ['#4a85ce', '#2d4975', '#60a5fa', '#93c5fd'];
@@ -27,6 +20,8 @@ const INACTIVE_COLOR = ['#334155'];
 
 export default function Welcome() {
     const [activeCity, setActiveCity] = useState(null);
+    const [currentPage, setCurrentPage] = useState(1);
+    const itemsPerPage = 4;
 
     const displayValue = (val) => val ? val : 0;
     const formatRp = (val) => val ? new Intl.NumberFormat('id-ID').format(val) : 0;
@@ -36,6 +31,23 @@ export default function Welcome() {
         const umrB = b.umr || 0;
         return umrB - umrA;
     });
+
+    const indexOfLastItem = currentPage * itemsPerPage;
+    const indexOfFirstItem = indexOfLastItem - itemsPerPage;
+    const currentCities = sortedCities.slice(indexOfFirstItem, indexOfLastItem);
+    const totalPages = Math.ceil(sortedCities.length / itemsPerPage);
+
+    let chartCities = sortedCities.slice(0, 10);
+    if (activeCity && !chartCities.find(c => c.id === activeCity.id)) {
+        chartCities.pop(); 
+        chartCities.push(activeCity);
+        chartCities.sort((a, b) => (b.umr || 0) - (a.umr || 0));
+    }
+
+    const dataUMR = chartCities.map(c => ({
+        kota: c.nama,
+        umr: c.umr || 0
+    }));
 
     const activePieData = activeCity ? [
         { name: 'Kendaraan Pribadi', value: activeCity.kendaraanPribadi || 0 },
@@ -50,7 +62,6 @@ export default function Welcome() {
 
     const renderCustomizedLabel = ({ cx, cy, midAngle, innerRadius, outerRadius, percent }) => {
         if (!activeCity || percent === 0) return null;
-
         const radius = innerRadius + (outerRadius - innerRadius) * 0.5;
         const x = cx + radius * Math.cos(-midAngle * Math.PI / 180);
         const y = cy + radius * Math.sin(-midAngle * Math.PI / 180);
@@ -123,20 +134,54 @@ export default function Welcome() {
                         </div>
 
                         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                            <div className="bg-[#1f232b] border border-slate-700/50 rounded-lg p-5 h-72">
+                            <div 
+                                className="bg-[#1f232b] border border-slate-700/50 rounded-lg p-5 h-72 cursor-default" 
+                                onClick={() => setActiveCity(null)}
+                            >
                                 <h3 className="text-sm font-medium mb-4">Diagram Batang UMR antar Kota</h3>
                                 <div className="w-full h-full pb-4 [&_.recharts-surface]:outline-none [&_.recharts-wrapper]:outline-none">
                                     <ResponsiveContainer width="100%" height="100%">
-                                        <BarChart data={dataUMR} margin={{ top: 10, right: 10, left: -20, bottom: 0 }} style={{ outline: 'none' }}>
+                                        <BarChart 
+                                            data={dataUMR} 
+                                            margin={{ top: 10, right: 10, left: -20, bottom: 0 }} 
+                                            style={{ outline: 'none' }} 
+                                        >
                                             <CartesianGrid strokeDasharray="3 3" stroke="#334155" vertical={false} />
                                             <XAxis dataKey="kota" stroke="#94a3b8" fontSize={11} tickLine={false} />
                                             <YAxis stroke="#94a3b8" fontSize={11} tickFormatter={(value) => `${value / 1000000}M`} tickLine={false} axisLine={false} />
+                                            
                                             <Tooltip 
-                                                contentStyle={{ backgroundColor: '#1e293b', borderColor: '#334155', color: '#f8fafc', outline: 'none' }}
+                                                contentStyle={{ backgroundColor: '#1e293b', borderColor: '#334155', outline: 'none' }}
+                                                itemStyle={{ color: '#f8fafc', fontWeight: 'bold' }} 
+                                                labelStyle={{ color: '#94a3b8', marginBottom: '4px' }}
                                                 cursor={{fill: '#334155', opacity: 0.4}}
-                                                formatter={(value) => new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', maximumSignificantDigits: 3 }).format(value)}
+                                                formatter={(value) => [new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', maximumSignificantDigits: 3 }).format(value), 'UMR']}
                                             />
-                                            <Bar dataKey="umr" fill="#4a85ce" radius={[4, 4, 0, 0]} barSize={30} />
+                                            
+                                            <Bar 
+                                                dataKey="umr" 
+                                                radius={[4, 4, 0, 0]} 
+                                                barSize={30} 
+                                                cursor="pointer"
+                                                onClick={(data, index, event) => {
+                                                    if (event && typeof event.stopPropagation === 'function') {
+                                                        event.stopPropagation();
+                                                    }
+                                                    const clickedCity = MASTER_DATA_KOTA.find(c => c.nama === data.kota);
+                                                    if (clickedCity) setActiveCity(clickedCity);
+                                                }}
+                                            >
+                                                {dataUMR.map((entry, index) => {
+                                                    const isSelected = activeCity ? activeCity.nama === entry.kota : true;
+                                                    return (
+                                                        <Cell 
+                                                            key={`cell-${index}`} 
+                                                            fill={isSelected ? '#4a85ce' : '#334155'} 
+                                                            style={{ outline: 'none', transition: 'fill 0.3s ease' }}
+                                                        />
+                                                    );
+                                                })}
+                                            </Bar>
                                         </BarChart>
                                     </ResponsiveContainer>
                                 </div>
@@ -155,7 +200,7 @@ export default function Welcome() {
                                                 cy="50%"
                                                 innerRadius={45}
                                                 outerRadius={75}
-                                                paddingAngle={activeCity ? 2 : 0}
+                                                paddingAngle={activeCity ? 2 : 0} 
                                                 dataKey="value"
                                                 stroke="none"
                                                 labelLine={false}
@@ -171,7 +216,10 @@ export default function Welcome() {
                                                 ))}
                                             </Pie>
                                             {activeCity && (
-                                                <Tooltip contentStyle={{ backgroundColor: '#1e293b', borderColor: '#334155', color: '#f8fafc', outline: 'none' }} />
+                                                <Tooltip 
+                                                    contentStyle={{ backgroundColor: '#1e293b', borderColor: '#334155', outline: 'none' }}
+                                                    itemStyle={{ color: '#f8fafc' }}
+                                                />
                                             )}
                                         </PieChart>
                                     </ResponsiveContainer>
@@ -181,7 +229,7 @@ export default function Welcome() {
 
                         <div className="bg-[#1f232b] border border-slate-700/50 rounded-lg p-5">
                             <h3 className="text-sm font-medium mb-4">Tabel Ringkasan Kota Terpilih</h3>
-                            <div className="overflow-x-auto">
+                            <div className="overflow-x-auto min-h-[220px]">
                                 <table className="w-full text-left text-sm text-slate-300">
                                     <thead className="border-b border-slate-700 text-slate-400 font-normal">
                                         <tr>
@@ -193,7 +241,7 @@ export default function Welcome() {
                                         </tr>
                                     </thead>
                                     <tbody>
-                                        {sortedCities.map((kota) => (
+                                        {currentCities.map((kota) => (
                                             <tr 
                                                 key={kota.id} 
                                                 onClick={() => setActiveCity(kota)}
@@ -214,6 +262,44 @@ export default function Welcome() {
                                     </tbody>
                                 </table>
                             </div>
+                            
+                            <div className="flex items-center justify-between mt-4">
+                                <div className="text-xs text-slate-400">
+                                    Menampilkan {sortedCities.length > 0 ? indexOfFirstItem + 1 : 0} - {Math.min(indexOfLastItem, sortedCities.length)} dari {sortedCities.length} kota
+                                </div>
+                                <div className="flex gap-1">
+                                    <button 
+                                        onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+                                        disabled={currentPage === 1}
+                                        className="px-3 py-1.5 bg-[#2a303c] text-slate-300 rounded text-xs font-medium disabled:opacity-50 hover:bg-slate-700 transition-colors"
+                                    >
+                                        Sebelumnya
+                                    </button>
+                                    
+                                    {[...Array(totalPages)].map((_, index) => (
+                                        <button
+                                            key={index}
+                                            onClick={() => setCurrentPage(index + 1)}
+                                            className={`px-3 py-1.5 rounded text-xs font-medium transition-colors ${
+                                                currentPage === index + 1 
+                                                ? 'bg-blue-600 text-white' 
+                                                : 'bg-[#2a303c] text-slate-300 hover:bg-slate-700'
+                                            }`}
+                                        >
+                                            {index + 1}
+                                        </button>
+                                    ))}
+
+                                    <button 
+                                        onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
+                                        disabled={currentPage === totalPages}
+                                        className="px-3 py-1.5 bg-[#2a303c] text-slate-300 rounded text-xs font-medium disabled:opacity-50 hover:bg-slate-700 transition-colors"
+                                    >
+                                        Selanjutnya
+                                    </button>
+                                </div>
+                            </div>
+                            
                         </div>
 
                     </div>
