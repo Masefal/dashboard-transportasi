@@ -2,57 +2,38 @@
 
 namespace Database\Seeders;
 
-use App\Models\City;
 use Illuminate\Database\Seeder;
+use App\Models\City;
 
 class CitySeeder extends Seeder
 {
-    /**
-     * Run the database seeds.
-     */
     public function run(): void
     {
         $cities = [
             [
-                'nama_kota' => 'DKI Jakarta',
-                'umr' => 5067381.00,
-                'waktu_tempuh' => 1957.00, // detik/km
-                'jumlah_armada' => 1500,
-                'kendaraan_pribadi' => 5000000,
-                'tarif_minimum' => 15000.00,
+                'nama' => 'Samarinda', 'provinsi' => 'Kalimantan Timur', 'latitude' => -0.5022, 'longitude' => 117.1536,
+                'umr' => 3220000, 'waktu_tempuh' => 42, 'armada_online' => 150, 'kendaraan_pribadi' => 60, 'tarif_min' => 16000
             ],
             [
-                'nama_kota' => 'Surabaya',
-                'umr' => 4725479.00,
-                'waktu_tempuh' => 1840.50,
-                'jumlah_armada' => 800,
-                'kendaraan_pribadi' => 2000000,
-                'tarif_minimum' => 14000.00,
+                'nama' => 'Surabaya', 'provinsi' => 'Jawa Timur', 'latitude' => -7.2504, 'longitude' => 112.7688,
+                'umr' => 4525000, 'waktu_tempuh' => 35, 'armada_online' => 420, 'kendaraan_pribadi' => 210, 'tarif_min' => 14000
             ],
             [
-                'nama_kota' => 'Bandung',
-                'umr' => 4338274.00,
-                'waktu_tempuh' => 2100.00,
-                'jumlah_armada' => 600,
-                'kendaraan_pribadi' => 1500000,
-                'tarif_minimum' => 13000.00,
+                'nama' => 'Bandung', 'provinsi' => 'Jawa Barat', 'latitude' => -6.9175, 'longitude' => 107.6191,
+                'umr' => 4048000, 'waktu_tempuh' => 55, 'armada_online' => 310, 'kendaraan_pribadi' => 180, 'tarif_min' => 15000
             ],
             [
-                'nama_kota' => 'Medan',
-                'umr' => 3769082.00,
-                'waktu_tempuh' => 1750.00,
-                'jumlah_armada' => 500,
-                'kendaraan_pribadi' => 1200000,
-                'tarif_minimum' => 12000.00,
+                'nama' => 'Medan', 'provinsi' => 'Sumatera Utara', 'latitude' => 3.5952, 'longitude' => 98.6722,
+                'umr' => 3624000, 'waktu_tempuh' => null, 'armada_online' => null, 'kendaraan_pribadi' => 120, 'tarif_min' => 12000
             ],
             [
-                'nama_kota' => 'Samarinda',
-                'umr' => 3497124.00,
-                'waktu_tempuh' => 1600.00,
-                'jumlah_armada' => 150,
-                'kendaraan_pribadi' => 300000,
-                'tarif_minimum' => 16000.00,
+                'nama' => 'Jakarta', 'provinsi' => 'DKI Jakarta', 'latitude' => -6.2088, 'longitude' => 106.8456,
+                'umr' => 4900000, 'waktu_tempuh' => 65, 'armada_online' => 550, 'kendaraan_pribadi' => 320, 'tarif_min' => 15000
             ],
+            [
+                'nama' => 'Makassar', 'provinsi' => 'Sulawesi Selatan', 'latitude' => -5.1476, 'longitude' => 119.4327,
+                'umr' => 3385000, 'waktu_tempuh' => 40, 'armada_online' => 180, 'kendaraan_pribadi' => 85, 'tarif_min' => 14000
+            ]
         ];
 
         foreach ($cities as $city) {
