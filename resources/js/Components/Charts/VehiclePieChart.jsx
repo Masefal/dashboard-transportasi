@@ -10,7 +10,7 @@ export default function VehiclePieChart({ activeCity }) {
         { name: 'Ojek Online', value: activeCity.armada_online || 0 },
         { name: 'Kendaraan Umum', value: Math.round((activeCity.kendaraan_pribadi || 0) * 0.3) },
         { name: 'Kendaraan Barang', value: Math.round((activeCity.armada_online || 0) * 0.15) }
-    ] : [
+    ].filter(item => item.value > 0) : [
         { name: 'Belum Ada Data', value: 100 }
     ];
 

@@ -14,9 +14,6 @@ class AdminCityController extends Controller
     public function index()
     {
         $cities = City::orderBy('id', 'desc')->get();
-        // Since frontend is handled separately, we could return JSON or a basic view.
-        // Returning JSON is safest if this is an API-only backend for Admin as well.
-        // Assuming admin also consumes API:
         return response()->json([
             'success' => true,
             'data' => $cities

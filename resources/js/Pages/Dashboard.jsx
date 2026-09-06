@@ -1,26 +1,26 @@
-import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
+import React from 'react';
 import { Head } from '@inertiajs/react';
+import Sidebar from '@/Components/Sidebar';
+import UpdateDataForm from '@/Components/UpdateDataForm';
+import AdminDataTable from '@/Components/AdminDataTable';
 
-export default function Dashboard() {
+export default function Dashboard({ auth, cities }) {
     return (
-        <AuthenticatedLayout
-            header={
-                <h2 className="text-xl font-semibold leading-tight text-gray-800">
-                    Dashboard
-                </h2>
-            }
-        >
-            <Head title="Dashboard" />
+        <>
+            <Head title="Admin Panel - Update Data Tarif" />
+            <div className="min-h-screen bg-[#1a1d24] text-slate-300 flex font-sans">
+                
+                <Sidebar />
 
-            <div className="py-12">
-                <div className="mx-auto max-w-7xl sm:px-6 lg:px-8">
-                    <div className="overflow-hidden bg-white shadow-sm sm:rounded-lg">
-                        <div className="p-6 text-gray-900">
-                            You're logged in!
-                        </div>
-                    </div>
-                </div>
+                <main className="flex-1 flex flex-col overflow-y-auto p-8">
+                    <h1 className="text-xl font-medium text-white mb-6">Admin Panel - Update Data Tarif</h1>
+
+                    <UpdateDataForm cities={cities} />
+                    
+                    <AdminDataTable cities={cities} />
+                    
+                </main>
             </div>
-        </AuthenticatedLayout>
+        </>
     );
 }
