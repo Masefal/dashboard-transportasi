@@ -51,4 +51,11 @@ class CityController extends Controller
 
         return redirect()->back();
     }
+
+    public function destroy(City $city)
+    {
+        $city->delete();
+
+        return redirect()->back();
+    }
 }
