@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { MapContainer, TileLayer, useMap, GeoJSON } from 'react-leaflet';
+import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 
 const isDataLengkap = (kota) => {
@@ -7,63 +8,77 @@ const isDataLengkap = (kota) => {
     return kunciWajib.every(key => kota[key] !== null && kota[key] !== undefined && kota[key] !== '');
 };
 
-function MapCamera({ lat, lng }) {
+function MapCamera({ activeCity, geoData }) {
     const map = useMap();
+    
     useEffect(() => {
-        if (lat && lng) {
-            map.flyTo([lat, lng], 9, { animate: true, duration: 1.5 });
+        if (activeCity) {
+            try {
+                if (activeCity.latitude && activeCity.longitude) {
+                    const lat = parseFloat(activeCity.latitude);
+                    const lng = parseFloat(activeCity.longitude);
+                    if (!isNaN(lat) && !isNaN(lng)) {
+                        map.flyTo([lat, lng], 9, { animate: true, duration: 1.5 });
+                        return;
+                    }
+                }
+                
+                if (geoData) {
+                    const targetFeature = geoData.features.find(feature => {
+                        const namaPeta = (feature.properties.name || feature.properties.KABKOT || feature.properties.WADMKK || feature.properties.NAME_2 || feature.properties.Propinsi || "").toLowerCase().trim();
+                        return namaPeta === (activeCity.nama || "").toLowerCase().trim();
+                    });
+
+                    if (targetFeature) {
+                        const layer = L.geoJSON(targetFeature);
+                        const bounds = layer.getBounds();
+                        
+                        if (bounds && bounds.isValid()) {
+                            map.fitBounds(bounds, { padding: [50, 50], animate: true, duration: 1.5 });
+                        }
+                    }
+                }
+            } catch (error) {
+                console.error(error);
+            }
         }
-    }, [lat, lng, map]);
+    }, [activeCity, geoData, map]);
+    
     return null;
 }
 
 export default function TransportMap({ activeCity, allCities, onCityClick }) {
-    const defaultCenter = activeCity && activeCity.latitude 
-        ? [activeCity.latitude, activeCity.longitude] 
-        : [-0.5022, 117.1536];
-    
+    const defaultCenter = [-0.5022, 117.1536];
     const [geoData, setGeoData] = useState(null);
 
     useEffect(() => {
         fetch('/geojson/batas-kota.json') 
             .then(response => response.json())
             .then(data => setGeoData(data))
-            .catch(error => console.error("Gagal memuat GeoJSON:", error));
+            .catch(error => console.error(error));
     }, []);
 
-    const getGeoStyle = (feature) => {
-        const namaPeta = (feature.properties.name || feature.properties.KABKOT || feature.properties.WADMKK || feature.properties.NAME_2 || feature.properties.Propinsi || "").toLowerCase();
-        const dataKota = allCities.find(kota => kota.nama.toLowerCase() === namaPeta);
+    const completeCount = allCities.filter(c => isDataLengkap(c)).length;
+
+    const getBaseStyle = (feature) => {
+        const namaPeta = (feature.properties.name || feature.properties.KABKOT || feature.properties.WADMKK || feature.properties.NAME_2 || feature.properties.Propinsi || "").toLowerCase().trim();
+        const dataKota = allCities.find(kota => (kota.nama || "").toLowerCase().trim() === namaPeta);
 
         if (!dataKota) return { opacity: 0, fillOpacity: 0, weight: 0 };
 
-        const isActive = activeCity && activeCity.id === dataKota.id;
-
-        if (isActive) {
-            return { 
-                color: '#22c55e', 
-                weight: 3, 
-                dashArray: '5, 5', 
-                fillColor: '#22c55e', 
-                fillOpacity: 0.1, 
-                opacity: 1 
-            };
-        } else {
-            const lengkap = isDataLengkap(dataKota);
-            const warnaUtama = lengkap ? '#3b82f6' : '#ef4444';
-            return { 
-                color: warnaUtama, 
-                weight: 1, 
-                fillColor: warnaUtama, 
-                fillOpacity: 0.2, 
-                opacity: 0.5 
-            };
-        }
+        const lengkap = isDataLengkap(dataKota);
+        return { 
+            color: lengkap ? '#3b82f6' : '#ef4444', 
+            weight: 1, 
+            fillColor: lengkap ? '#3b82f6' : '#ef4444', 
+            fillOpacity: 0.2, 
+            opacity: 0.5 
+        };
     };
 
     const onEachFeature = (feature, layer) => {
-        const namaPeta = (feature.properties.name || feature.properties.KABKOT || feature.properties.WADMKK || feature.properties.NAME_2 || feature.properties.Propinsi || "").toLowerCase();
-        const dataKota = allCities.find(kota => kota.nama.toLowerCase() === namaPeta);
+        const namaPeta = (feature.properties.name || feature.properties.KABKOT || feature.properties.WADMKK || feature.properties.NAME_2 || feature.properties.Propinsi || "").toLowerCase().trim();
+        const dataKota = allCities.find(kota => (kota.nama || "").toLowerCase().trim() === namaPeta);
 
         if (dataKota) {
             layer.bindTooltip(`<div class="font-bold text-slate-800">${dataKota.nama}</div>`, {
@@ -71,13 +86,15 @@ export default function TransportMap({ activeCity, allCities, onCityClick }) {
                 className: 'bg-white border-none rounded shadow-md px-2 py-1 text-xs'
             });
             layer.on({
-                click: (e) => {
-                    onCityClick(dataKota);
-                    e.target._map.fitBounds(e.target.getBounds(), { padding: [50, 50], animate: true, duration: 1.5 });
-                }
+                click: () => onCityClick(dataKota)
             });
         }
     };
+
+    const activeFeature = (activeCity && geoData) ? geoData.features.find(feature => {
+        const namaPeta = (feature.properties.name || feature.properties.KABKOT || feature.properties.WADMKK || feature.properties.NAME_2 || feature.properties.Propinsi || "").toLowerCase().trim();
+        return namaPeta === (activeCity.nama || "").toLowerCase().trim();
+    }) : null;
 
     return (
         <div className="w-full h-full relative">
@@ -89,18 +106,33 @@ export default function TransportMap({ activeCity, allCities, onCityClick }) {
                 zoomControl={false} 
                 attributionControl={false}
             >
-                <TileLayer url="https://{s}.basemaps.cartocdn.com/dark_nolabels/{z}/{x}/{y}{r}.png" />
+                <TileLayer url="https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Dark_Gray_Base/MapServer/tile/{z}/{y}/{x}" />
                 
                 {geoData && (
                     <GeoJSON 
-                        key={activeCity ? activeCity.id : 'init'} 
+                        key={`base-${completeCount}`} 
                         data={geoData} 
-                        style={getGeoStyle} 
+                        style={getBaseStyle} 
                         onEachFeature={onEachFeature} 
                     />
                 )}
                 
-                {activeCity && <MapCamera lat={activeCity.latitude} lng={activeCity.longitude} />}
+                {activeFeature && (
+                    <GeoJSON 
+                        key={`active-${activeCity.id}`} 
+                        data={activeFeature} 
+                        style={{ 
+                            color: '#22c55e', 
+                            weight: 3, 
+                            dashArray: '5, 5', 
+                            fillColor: '#22c55e', 
+                            fillOpacity: 0.2, 
+                            opacity: 1 
+                        }} 
+                    />
+                )}
+                
+                <MapCamera activeCity={activeCity} geoData={geoData} />
             </MapContainer>
         </div>
     );

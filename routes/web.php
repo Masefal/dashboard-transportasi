@@ -23,6 +23,7 @@ Route::middleware('auth')->group(function () {
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 
     Route::post('/cities', [CityController::class, 'store'])->name('cities.store');
+    Route::post('/cities/import', [CityController::class, 'import'])->name('cities.import');
     Route::put('/cities/{city}', [CityController::class, 'update'])->name('cities.update');
     Route::delete('/cities/{city}', [CityController::class, 'destroy'])->name('cities.destroy');
 });
