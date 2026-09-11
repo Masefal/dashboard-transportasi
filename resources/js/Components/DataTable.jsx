@@ -14,6 +14,22 @@ export default function DataTable({ cities, activeCity, onCityClick }) {
     const currentCities = sortedCities.slice(indexOfFirstItem, indexOfLastItem);
     const totalPages = Math.ceil(sortedCities.length / itemsPerPage);
 
+    const getPageNumbers = () => {
+        if (totalPages <= 7) {
+            return Array.from({ length: totalPages }, (_, i) => i + 1);
+        }
+
+        if (currentPage <= 3) {
+            return [1, 2, 3, 4, '...', totalPages];
+        }
+
+        if (currentPage >= totalPages - 2) {
+            return [1, '...', totalPages - 3, totalPages - 2, totalPages - 1, totalPages];
+        }
+
+        return [1, '...', currentPage - 1, currentPage, currentPage + 1, '...', totalPages];
+    };
+
     return (
         <div className="bg-[#1f232b] border border-slate-700/50 rounded-lg p-5">
             <h3 className="text-sm font-medium mb-4">Tabel Ringkasan Kota</h3>
@@ -55,33 +71,36 @@ export default function DataTable({ cities, activeCity, onCityClick }) {
                 <div className="text-xs text-slate-400">
                     Menampilkan {sortedCities.length > 0 ? indexOfFirstItem + 1 : 0} - {Math.min(indexOfLastItem, sortedCities.length)} dari {sortedCities.length} kota
                 </div>
-                <div className="flex gap-1">
+                <div className="flex gap-1 items-center">
                     <button 
                         onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
                         disabled={currentPage === 1}
-                        className="px-3 py-1.5 bg-[#2a303c] text-slate-300 rounded text-xs font-medium disabled:opacity-50 hover:bg-slate-700 transition-colors"
+                        className="px-3 py-1.5 bg-[#2a303c] text-slate-300 rounded text-xs font-medium disabled:opacity-50 hover:bg-slate-700 transition-colors cursor-pointer"
                     >
                         Prev
                     </button>
                     
-                    {[...Array(totalPages)].map((_, index) => (
+                    {getPageNumbers().map((page, index) => (
                         <button
                             key={index}
-                            onClick={() => setCurrentPage(index + 1)}
+                            onClick={() => typeof page === 'number' ? setCurrentPage(page) : null}
+                            disabled={page === '...'}
                             className={`px-3 py-1.5 rounded text-xs font-medium transition-colors ${
-                                currentPage === index + 1 
-                                ? 'bg-blue-600 text-white' 
-                                : 'bg-[#2a303c] text-slate-300 hover:bg-slate-700'
+                                page === '...' 
+                                ? 'text-slate-500 cursor-default bg-transparent' 
+                                : currentPage === page 
+                                    ? 'bg-blue-600 text-white' 
+                                    : 'bg-[#2a303c] text-slate-300 hover:bg-slate-700 cursor-pointer'
                             }`}
                         >
-                            {index + 1}
+                            {page}
                         </button>
                     ))}
 
                     <button 
                         onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
                         disabled={currentPage === totalPages}
-                        className="px-3 py-1.5 bg-[#2a303c] text-slate-300 rounded text-xs font-medium disabled:opacity-50 hover:bg-slate-700 transition-colors"
+                        className="px-3 py-1.5 bg-[#2a303c] text-slate-300 rounded text-xs font-medium disabled:opacity-50 hover:bg-slate-700 transition-colors cursor-pointer"
                     >
                         Next
                     </button>
