@@ -6,6 +6,7 @@ import TransportMap from '@/Components/TransportMap';
 import UmrBarChart from '@/Components/Charts/UmrBarChart';
 import VehiclePieChart from '@/Components/Charts/VehiclePieChart';
 import DataTable from '@/Components/DataTable';
+import Footer from '@/Components/Footer';
 
 export default function Welcome({ cities }) {
     const [activeCity, setActiveCity] = useState(null);
@@ -56,6 +57,7 @@ export default function Welcome({ cities }) {
                         />
 
                     </div>
+                    <Footer />
                 </main>
             </div>
         </>

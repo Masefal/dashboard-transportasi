@@ -3,6 +3,7 @@ import Dropdown from '@/Components/Dropdown';
 import NavLink from '@/Components/NavLink';
 import ResponsiveNavLink from '@/Components/ResponsiveNavLink';
 import { Link, usePage } from '@inertiajs/react';
+import Footer from '@/Components/Footer';
 import { useState } from 'react';
 
 export default function AuthenticatedLayout({ header, children }) {
@@ -171,6 +172,7 @@ export default function AuthenticatedLayout({ header, children }) {
             )}
 
             <main>{children}</main>
+            <Footer />
         </div>
     );
 }

@@ -3,6 +3,7 @@ import { Head } from '@inertiajs/react';
 import Sidebar from '@/Components/Sidebar';
 import UpdateDataForm from '@/Components/UpdateDataForm';
 import AdminDataTable from '@/Components/AdminDataTable';
+import Footer from '@/Components/Footer';
 
 export default function Dashboard({ auth, cities }) {
     return (
@@ -18,8 +19,8 @@ export default function Dashboard({ auth, cities }) {
                     <UpdateDataForm cities={cities} />
                     
                     <AdminDataTable cities={cities} />
-                    
-                </main>
+                    <Footer />
+                </main>             
             </div>
         </>
     );
